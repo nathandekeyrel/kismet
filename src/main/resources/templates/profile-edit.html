@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Profile</title>
+</head>
+<body>
+<h1>Edit Your Bio</h1>
+
+<form th:action="@{/profile/edit}" th:object="${user}" method="post">
+    <div>
+        <label for="bio">Your Bio:</label>
+        <textarea id="bio" th:field="*{bio}" rows="5" cols="40"></textarea>
+    </div>
+    <div>
+        <button type="submit">Save Changes</button>
+        <a th:href="@{/profile}">Cancel</a>
+    </div>
+</form>
+
+</body>
+</html>

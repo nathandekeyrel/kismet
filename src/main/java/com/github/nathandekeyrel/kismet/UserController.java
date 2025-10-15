@@ -58,4 +58,27 @@ public class UserController {
         model.addAttribute("user", user);
         return "profile";
     }
+
+    @GetMapping("/profile/edit")
+    public String showProfileEdit(Model model, Principal principal) {
+        String email = principal.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        model.addAttribute("user", user);
+        return "profile-edit";
+    }
+
+    @PostMapping("/profile/edit")
+    public String processProfileEdit(User user, Principal principal) {
+        String email = principal.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        currentUser.setBio(user.getBio());
+
+        userRepository.save(currentUser);
+
+        return "redirect:/profile";
+    }
 }
