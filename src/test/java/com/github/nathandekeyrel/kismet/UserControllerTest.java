@@ -1,6 +1,10 @@
 package com.github.nathandekeyrel.kismet;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,11 +52,11 @@ public class UserControllerTest {
     @Test
     void whenRegisteringNewUser_thenSavesUserAndRedirectsToLogin() throws Exception {
         mockMvc.perform(post("/register")
-                .param("email", "newuser@example.com")
-                .param("password", "12345")
-                .with(csrf()))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/login"));
+                        .param("email", "newuser@example.com")
+                        .param("password", "12345")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
         verify(userRepository).save(any(User.class));
     }
 
@@ -90,5 +94,54 @@ public class UserControllerTest {
         mockMvc.perform(get("/profile"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("http://localhost/login"));
+    }
+
+    @Test
+    @WithMockUser
+    void whenAuthenticated_thenReturnsProfileEditPage() throws Exception {
+        String mockUserEmail = "user";
+        User mockUser = new User();
+        mockUser.setEmail(mockUserEmail);
+
+        when(userRepository.findByEmail(mockUserEmail)).thenReturn(Optional.of(mockUser));
+
+        mockMvc.perform(get("/profile/edit"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("profile-edit"))
+                .andExpect(model().attributeExists("user"));
+    }
+
+    @Test
+    void whenUnauthenticated_thenRedirectsFromProfileEditToLogin() throws Exception {
+        mockMvc.perform(get("/profile/edit"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("http://localhost/login"));
+    }
+
+    @Test
+    @WithMockUser
+    void whenEditingProfile_thenUpdatesUserAndRedirects() throws Exception {
+        String mockUserEmail = "user";
+        String newBio = "This is my new, updated bio.";
+
+        User originalUser = new User();
+        originalUser.setEmail(mockUserEmail);
+        originalUser.setBio(newBio);
+
+        when(userRepository.findByEmail(mockUserEmail)).thenReturn(Optional.of(originalUser));
+
+        mockMvc.perform(post("/profile/edit")
+                        .param("bio", newBio)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/profile"));
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
+        verify(userRepository).save(userCaptor.capture());
+
+        User savedUser = userCaptor.getValue();
+
+        assertEquals(newBio, savedUser.getBio());
     }
 }
