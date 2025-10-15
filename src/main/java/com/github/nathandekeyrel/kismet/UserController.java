@@ -36,4 +36,9 @@ public class UserController {
     public String showLoginForm(Model model) {
         return "login";
     }
+
+    @GetMapping("/")
+    public String showHomePage(){
+        return "home";
+    }
 }

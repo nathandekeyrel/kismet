@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Kismet Home</title>
+</head>
+<body>
+<h1>Welcome to Kismet!</h1>
+<p>You have successfully logged in.</p>
+
+<!--
+    Logout is a POST request by default for security (to prevent CSRF attacks).
+    Spring Security will automatically handle this form submission.
+-->
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
+
+</body>
+</html>
