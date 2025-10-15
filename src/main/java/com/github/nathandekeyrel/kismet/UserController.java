@@ -1,11 +1,14 @@
 package com.github.nathandekeyrel.kismet;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import java.security.Principal;
 
 @Controller
 public class UserController {
@@ -43,5 +46,16 @@ public class UserController {
     @GetMapping("/")
     public String showHomePage() {
         return "home";
+    }
+
+    @GetMapping("/profile")
+    public String showProfile(Model model, Principal principal) {
+        String email = principal.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        model.addAttribute("user", user);
+        return "profile";
     }
 }
