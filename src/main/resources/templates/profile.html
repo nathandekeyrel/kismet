@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Profile</title>
+</head>
+<body>
+<h1>My Profile</h1>
+
+<div th:object="${user}">
+    <p>
+        <strong>Name:</strong>
+        <span th:text="*{firstName + ' ' + lastName}"></span>
+    </p>
+    <p>
+        <strong>Email:</strong>
+        <span th:text="*{email}"></span>
+    </p>
+    <p>
+        <strong>Birthday:</strong>
+        <span th:text="*{dateOfBirth}"></span>
+    </p>
+    <p>
+        <strong>Gender:</strong>
+        <span th:text="*{gender}"></span>
+    </p>
+    <p>
+        <strong>Bio:</strong>
+        <span th:if="*{bio}" th:text="*{bio}"></span>
+        <span th:if="*{bio == null}"><em>No bio provided.</em></span>
+    </p>
+</div>
+
+<hr>
+
+<a href="#">Edit Profile</a>
+<a th:href="@{/}">Back to Home</a>
+
+</body>
+</html>

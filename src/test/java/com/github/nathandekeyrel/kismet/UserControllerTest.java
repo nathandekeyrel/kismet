@@ -69,4 +69,26 @@ public class UserControllerTest {
                 .andExpect(view().name("register"))
                 .andExpect(model().attributeExists("error"));
     }
+
+    @Test
+    @WithMockUser
+    void whenAuthenticated_thenReturnsProfilePage() throws Exception {
+        String mockUserEmail = "user";
+        User mockUser = new User();
+        mockUser.setEmail(mockUserEmail);
+
+        when(userRepository.findByEmail(mockUserEmail)).thenReturn(Optional.of(mockUser));
+
+        mockMvc.perform(get("/profile"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("profile"))
+                .andExpect(model().attributeExists("user"));
+    }
+
+    @Test
+    void whenUnauthenticated_thenRedirectsFromProfileToLogin() throws Exception {
+        mockMvc.perform(get("/profile"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("http://localhost/login"));
+    }
 }

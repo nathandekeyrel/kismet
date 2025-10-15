@@ -19,6 +19,26 @@
         <input type="password" th:field="*{password}" required/>
     </div>
     <div>
+        <label>First Name:</label>
+        <input type="text" th:field="*{firstName}" required />
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <input type="text" th:field="*{lastName}" required />
+    </div>
+    <div>
+        <label>Date of Birth:</label>
+        <input type="date" th:field="*{dateOfBirth}" required />
+    </div>
+    <div>
+        <label>Gender:</label>
+        <select th:field="*{gender}" required>
+            <option value="">-- Please select --</option>
+            <option th:each="g : ${T(com.github.nathandekeyrel.kismet.Gender).values()}"
+                    th:value="${g}" th:text="${g}"></option>
+        </select>
+    </div>
+    <div>
         <button type="submit">Register</button>
     </div>
 </form>
