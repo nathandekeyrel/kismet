@@ -27,10 +27,13 @@ public class UserController {
 
     @PostMapping("/register")
     public String processRegistration(@ModelAttribute("user") User user) {
-        // we will add password hashing here
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return "redirect:/login";
     }
 
+    @GetMapping("/login")
+    public String showLoginForm(Model model) {
+        return "login";
+    }
 }
