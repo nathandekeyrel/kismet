@@ -25,7 +25,11 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String processRegistration(@ModelAttribute("user") User user) {
+    public String processRegistration(User user, Model model) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            model.addAttribute("error", "An account with this email already exists.");
+            return "register";
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return "redirect:/login";

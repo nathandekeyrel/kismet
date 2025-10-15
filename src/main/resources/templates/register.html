@@ -5,6 +5,10 @@
 </head>
 <body>
 <h1>Create an Account</h1>
+<div th:if="${error}" class="error-message">
+    <p th:text="${error}"></p>
+</div>
+
 <form th:action="@{/register}" th:object="${user}" method="post">
     <div>
         <label>Email:</label>
@@ -18,5 +22,6 @@
         <button type="submit">Register</button>
     </div>
 </form>
+<p>Already have an account? <a th:href="@{/login}">Log in here.</a></p>
 </body>
 </html>
