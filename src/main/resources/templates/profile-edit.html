@@ -4,18 +4,23 @@
     <title>Edit Profile</title>
 </head>
 <body>
-<h1>Edit Your Bio</h1>
+<h1>Edit Your Profile</h1>
 
-<form th:action="@{/profile/edit}" th:object="${user}" method="post">
-    <div>
-        <label for="bio">Your Bio:</label>
-        <textarea id="bio" th:field="*{bio}" rows="5" cols="40"></textarea>
+<form th:action="@{/profile/edit}" th:object="${profileData}" method="post">
+    <div th:each="section : ${sections}">
+        <h2 th:text="${section.title}"></h2>
+
+        <select> <!-- add the th:field binding later -->
+            <option value="">-- Choose a prompt --</option>
+            <option th:each="prompt : ${section.prompts}"
+                    th:value="${prompt.id}"
+                    th:text="${prompt.text}"></option>
+        </select>
+        <br>
+        <textarea rows="4" cols="50" placeholder="Your answer..."></textarea>
     </div>
-    <div>
-        <button type="submit">Save Changes</button>
-        <a th:href="@{/profile}">Cancel</a>
-    </div>
+
+    <button type="submit">Save Profile</button>
 </form>
-
 </body>
 </html>

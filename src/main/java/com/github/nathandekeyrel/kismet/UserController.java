@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 public class UserController {
@@ -16,10 +17,16 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final PromptSectionRepository promptSectionRepository;
+    private final ProfileAnswerRepository profileAnswerRepository;
+
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, PromptSectionRepository promptSectionRepository, ProfileAnswerRepository profileAnswerRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.promptSectionRepository = promptSectionRepository;
+        this.profileAnswerRepository = profileAnswerRepository;
     }
+
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
@@ -51,33 +58,34 @@ public class UserController {
     @GetMapping("/profile")
     public String showProfile(Model model, Principal principal) {
         String email = principal.getName();
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        List<ProfileAnswer> answers = profileAnswerRepository.findByUser(user);
+
         model.addAttribute("user", user);
+        model.addAttribute("answers", answers);
+
         return "profile";
     }
 
     @GetMapping("/profile/edit")
     public String showProfileEdit(Model model, Principal principal) {
-        String email = principal.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        List<PromptSection> sections = promptSectionRepository.findAll();
+        model.addAttribute("sections", sections);
 
-        model.addAttribute("user", user);
         return "profile-edit";
     }
 
     @PostMapping("/profile/edit")
     public String processProfileEdit(User user, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        currentUser.setBio(user.getBio());
-
-        userRepository.save(currentUser);
+//        String email = principal.getName();
+//        User currentUser = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//
+//        currentUser.setBio(user.getBio());
+//
+//        userRepository.save(currentUser);
 
         return "redirect:/profile";
     }
