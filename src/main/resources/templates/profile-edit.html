@@ -4,18 +4,30 @@
     <title>Edit Profile</title>
 </head>
 <body>
-<h1>Edit Your Bio</h1>
+<h1>Edit Your Profile</h1>
 
-<form th:action="@{/profile/edit}" th:object="${user}" method="post">
+<form th:action="@{/profile/edit}" th:object="${profileForm}" method="post">
+
     <div>
         <label for="bio">Your Bio:</label>
-        <textarea id="bio" th:field="*{bio}" rows="5" cols="40"></textarea>
+        <textarea id="bio" th:field="*{bio}" rows="4" cols="50"></textarea>
     </div>
+    <hr>
+
+    <div th:each="section, secStat : ${sections}">
+        <h2 th:text="${section.title}"></h2>
+
+        <div th:each="prompt : ${section.prompts}" style="margin-bottom: 1em;">
+            <label th:for="|answers[${prompt.id}]|" th:text="${prompt.text}"></label>
+            <br>
+            <textarea th:field="*{answers[__${prompt.id}__]}" rows="4" cols="50"></textarea>
+        </div>
+    </div>
+
     <div>
         <button type="submit">Save Changes</button>
         <a th:href="@{/profile}">Cancel</a>
     </div>
 </form>
-
 </body>
 </html>

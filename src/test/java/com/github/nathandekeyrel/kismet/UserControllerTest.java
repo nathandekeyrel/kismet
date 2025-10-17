@@ -12,6 +12,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
@@ -32,6 +33,12 @@ public class UserControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private ProfileAnswerRepository profileAnswerRepository;
+
+    @MockitoBean
+    private PromptRepository promptRepository;
 
     @Test
     @WithMockUser
@@ -82,6 +89,7 @@ public class UserControllerTest {
         mockUser.setEmail(mockUserEmail);
 
         when(userRepository.findByEmail(mockUserEmail)).thenReturn(Optional.of(mockUser));
+        when(profileAnswerRepository.findByUser(any(User.class))).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/profile"))
                 .andExpect(status().isOk())
@@ -108,7 +116,8 @@ public class UserControllerTest {
         mockMvc.perform(get("/profile/edit"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("profile-edit"))
-                .andExpect(model().attributeExists("user"));
+                .andExpect(model().attributeExists("sections"))
+                .andExpect(model().attributeExists("profileForm"));
     }
 
     @Test
@@ -123,25 +132,37 @@ public class UserControllerTest {
     void whenEditingProfile_thenUpdatesUserAndRedirects() throws Exception {
         String mockUserEmail = "user";
         String newBio = "This is my new, updated bio.";
+        String promptAnswer = "Yes";
 
         User originalUser = new User();
         originalUser.setEmail(mockUserEmail);
-        originalUser.setBio(newBio);
 
         when(userRepository.findByEmail(mockUserEmail)).thenReturn(Optional.of(originalUser));
 
+        Prompt originalPrompt = new Prompt();
+        originalPrompt.setId(101L);
+        originalPrompt.setText("What was the last prompt you made?");
+
+        when(promptRepository.findById(101L)).thenReturn(Optional.of(originalPrompt));
+
         mockMvc.perform(post("/profile/edit")
                         .param("bio", newBio)
+                        .param("answers[101]", promptAnswer)
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/profile"));
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-
         verify(userRepository).save(userCaptor.capture());
-
         User savedUser = userCaptor.getValue();
-
         assertEquals(newBio, savedUser.getBio());
+
+        ArgumentCaptor<ProfileAnswer> profileAnswerCaptor = ArgumentCaptor.forClass(ProfileAnswer.class);
+        verify(profileAnswerRepository).save(profileAnswerCaptor.capture());
+        ProfileAnswer savedProfileAnswer = profileAnswerCaptor.getValue();
+
+        assertEquals(promptAnswer, savedProfileAnswer.getAnswerText());
+        assertEquals(originalUser, savedProfileAnswer.getUser());
+        assertEquals(originalPrompt, savedProfileAnswer.getPrompt());
     }
 }
