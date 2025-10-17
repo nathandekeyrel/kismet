@@ -34,7 +34,7 @@ public class DataInitializer implements CommandLineRunner {
             promptRepository.save(p2);
 
             Prompt p3 = new Prompt();
-            p3.setText("A goal I'm working towards is...");
+            p3.setText("Let's see how changing affects the app...");
             p3.setSection(aboutMe);
             promptRepository.save(p3);
 
