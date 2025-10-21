@@ -44,6 +44,27 @@
 <hr>
 
 <h2>Add a Friend</h2>
+<form th:action="@{/friends/search}" method="get">
+    <label for="nameSearch">Search by Name:</label>
+    <input type="text" id="nameSearch" name="query" />
+    <button type="submit">Search</button>
+</form>
+
+<div th:if="${searchResults}">
+    <h3>Search Results</h3>
+    <div th:if="${#lists.isEmpty(searchResults)}">
+        <p>No users found matching your search.</p>
+    </div>
+    <ul>
+        <li th:each="user : ${searchResults}">
+            <span th:text="${user.firstName + ' ' + user.lastName}"></span>
+            <form th:action="@{/friends/add}" method="post" style="display: inline;">
+                <input type="hidden" name="addresseeId" th:value="${user.id}" />
+                <button type="submit">Add Friend</button>
+            </form>
+        </li>
+    </ul>
+</div>
 
 <a th:href="@{/profile}">Back</a>
 <a th:href="@{/}">Home</a>
