@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -36,4 +38,10 @@ public class User {
 
     @Column
     private String bio;
+
+    @OneToMany(mappedBy = "requester")
+    private Set<Friendship> sentFriendRequests = new HashSet<>();
+
+    @OneToMany(mappedBy = "addressee")
+    private Set<Friendship> receivedFriendRequests = new HashSet<>();
 }
