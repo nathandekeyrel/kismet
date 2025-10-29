@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Friends</title>
+</head>
+<body>
+<h1>My Friends</h1>
+
+<h2>Pending Requests</h2>
+<div th:if="${#lists.isEmpty(pendingRequests)}">
+    <p>You have no pending friend requests.</p>
+</div>
+<ul>
+    <li th:each="friendship : ${pendingRequests}">
+        <span th:text="${friendship.requester.firstName + ' ' + friendship.requester.lastName}"></span>
+
+        <form th:action="@{/friends/accept}" method="post" style="display: inline;">
+            <input type="hidden" name="friendshipId" th:value="${friendship.id}"/>
+            <button type="submit">Accept</button>
+        </form>
+
+        <form th:action="@{/friends/decline}" method="post" style="display: inline;">
+            <input type="hidden" name="friendshipId" th:value="${friendship.id}"/>
+            <button type="submit">Decline</button>
+        </form>
+    </li>
+</ul>
+
+<hr>
+
+<h2>My Friends</h2>
+<div th:if="${#lists.isEmpty(acceptedFriends)}">
+    <p>You haven't added any friends yet.</p>
+</div>
+<ul>
+    <li th:each="friendship : ${acceptedFriends}">
+            <span th:if="${friendship.requester.id == currentUser.id}"
+                  th:text="${friendship.addressee.firstName + ' ' + friendship.addressee.lastName}"></span>
+        <span th:if="${friendship.addressee.id == currentUser.id}"
+              th:text="${friendship.requester.firstName + ' ' + friendship.requester.lastName}"></span>
+    </li>
+</ul>
+
+<hr>
+
+<h2>Add a Friend</h2>
+<form th:action="@{/friends/search}" method="get">
+    <label for="nameSearch">Search by Name:</label>
+    <input type="text" id="nameSearch" name="query" />
+    <button type="submit">Search</button>
+</form>
+
+<div th:if="${searchResults}">
+    <h3>Search Results</h3>
+    <div th:if="${#lists.isEmpty(searchResults)}">
+        <p>No users found matching your search.</p>
+    </div>
+    <ul>
+        <li th:each="user : ${searchResults}">
+            <span th:text="${user.firstName + ' ' + user.lastName}"></span>
+            <form th:action="@{/friends/add}" method="post" style="display: inline;">
+                <input type="hidden" name="addresseeId" th:value="${user.id}" />
+                <button type="submit">Add Friend</button>
+            </form>
+        </li>
+    </ul>
+</div>
+
+<a th:href="@{/profile}">Back</a>
+<a th:href="@{/}">Home</a>
+</body>
+</html>
