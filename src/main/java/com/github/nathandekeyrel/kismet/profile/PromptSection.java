@@ -1,11 +1,11 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.profile;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Data
 @Entity
@@ -19,5 +19,6 @@ public class PromptSection {
     private String title;
 
     @OneToMany(mappedBy = "section")
+    @ToString.Exclude
     private List<Prompt> prompts = new ArrayList<>();
 }

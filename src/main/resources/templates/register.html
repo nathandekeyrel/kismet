@@ -34,7 +34,7 @@
         <label>Gender:</label>
         <select th:field="*{gender}" required>
             <option value="">-- Please select --</option>
-            <option th:each="g : ${T(com.github.nathandekeyrel.kismet.Gender).values()}"
+            <option th:each="g : ${T(com.github.nathandekeyrel.kismet.user.Gender).values()}"
                     th:value="${g}" th:text="${g}"></option>
         </select>
     </div>

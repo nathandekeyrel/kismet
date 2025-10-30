@@ -1,7 +1,8 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.profile;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -16,5 +17,6 @@ public class Prompt {
 
     @ManyToOne
     @JoinColumn(name = "section_id", nullable = false)
+    @ToString.Exclude
     private PromptSection section;
 }

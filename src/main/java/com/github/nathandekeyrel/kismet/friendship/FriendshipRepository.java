@@ -1,5 +1,6 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.friendship;
 
+import com.github.nathandekeyrel.kismet.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

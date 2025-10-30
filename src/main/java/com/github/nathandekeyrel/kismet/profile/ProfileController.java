@@ -1,7 +1,8 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.profile;
 
+import com.github.nathandekeyrel.kismet.user.User;
+import com.github.nathandekeyrel.kismet.user.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,49 +14,19 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class UserController {
+public class ProfileController {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     private final PromptSectionRepository promptSectionRepository;
     private final ProfileAnswerRepository profileAnswerRepository;
     private final PromptRepository promptRepository;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, PromptSectionRepository promptSectionRepository, ProfileAnswerRepository profileAnswerRepository, PromptRepository promptRepository) {
+    public ProfileController(UserRepository userRepository, PromptSectionRepository promptSectionRepository, ProfileAnswerRepository profileAnswerRepository, PromptRepository promptRepository) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.promptSectionRepository = promptSectionRepository;
         this.profileAnswerRepository = profileAnswerRepository;
         this.promptRepository = promptRepository;
-    }
-
-
-    @GetMapping("/register")
-    public String showRegistrationForm(Model model) {
-        model.addAttribute("user", new User());
-        return "register";
-    }
-
-    @PostMapping("/register")
-    public String processRegistration(User user, Model model) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            model.addAttribute("error", "An account with this email already exists.");
-            return "register";
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return "redirect:/login";
-    }
-
-    @GetMapping("/login")
-    public String showLoginForm(Model model) {
-        return "login";
-    }
-
-    @GetMapping("/")
-    public String showHomePage() {
-        return "home";
     }
 
     @GetMapping("/profile")

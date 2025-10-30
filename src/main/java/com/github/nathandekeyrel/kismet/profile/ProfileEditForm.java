@@ -1,4 +1,4 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.profile;
 
 import lombok.Data;
 
@@ -10,5 +10,4 @@ public class ProfileEditForm {
     private String bio;
 
     private Map<Long, String> answers = new HashMap<>();
-
 }

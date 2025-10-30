@@ -1,4 +1,4 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.user;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

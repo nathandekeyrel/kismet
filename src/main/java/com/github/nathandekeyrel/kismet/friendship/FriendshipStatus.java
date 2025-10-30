@@ -1,4 +1,4 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.friendship;
 
 public enum FriendshipStatus {
     PENDING,

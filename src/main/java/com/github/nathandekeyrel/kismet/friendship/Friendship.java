@@ -1,5 +1,6 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.friendship;
 
+import com.github.nathandekeyrel.kismet.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
