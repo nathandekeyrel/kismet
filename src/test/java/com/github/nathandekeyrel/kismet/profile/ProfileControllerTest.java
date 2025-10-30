@@ -1,5 +1,8 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.profile;
 
+
+import com.github.nathandekeyrel.kismet.user.User;
+import com.github.nathandekeyrel.kismet.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -15,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+public class ProfileControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,46 +42,8 @@ public class UserControllerTest {
     @MockitoBean
     private PromptRepository promptRepository;
 
-    @Test
-    @WithMockUser
-    void whenAuthenticated_thenReturnsHomePage() throws Exception {
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("home"))
-                .andExpect(content().string(containsString("Welcome to Kismet!")));
-    }
-
-    @Test
-    void whenUnauthenticated_thenRedirectsToLogin() throws Exception {
-        mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("http://localhost/login"));
-    }
-
-    @Test
-    void whenRegisteringNewUser_thenSavesUserAndRedirectsToLogin() throws Exception {
-        mockMvc.perform(post("/register")
-                        .param("email", "newuser@example.com")
-                        .param("password", "12345")
-                        .with(csrf()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/login"));
-        verify(userRepository).save(any(User.class));
-    }
-
-    @Test
-    void whenRegisteringDuplicateUser_thenReturnsRegisterPageWithError() throws Exception {
-        String duplicateEmail = "test@example.com";
-        when(userRepository.findByEmail(duplicateEmail)).thenReturn(Optional.of(new User()));
-
-        mockMvc.perform(post("/register")
-                        .param("email", duplicateEmail)
-                        .param("password", "12345")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("register"))
-                .andExpect(model().attributeExists("error"));
-    }
+    @MockitoBean
+    private PromptSectionRepository promptSectionRepository;
 
     @Test
     @WithMockUser
@@ -112,6 +76,7 @@ public class UserControllerTest {
         mockUser.setEmail(mockUserEmail);
 
         when(userRepository.findByEmail(mockUserEmail)).thenReturn(Optional.of(mockUser));
+        when(promptSectionRepository.findAll()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/profile/edit"))
                 .andExpect(status().isOk())

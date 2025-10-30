@@ -1,5 +1,9 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.config;
 
+import com.github.nathandekeyrel.kismet.profile.Prompt;
+import com.github.nathandekeyrel.kismet.profile.PromptRepository;
+import com.github.nathandekeyrel.kismet.profile.PromptSection;
+import com.github.nathandekeyrel.kismet.profile.PromptSectionRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

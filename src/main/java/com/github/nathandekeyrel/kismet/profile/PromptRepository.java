@@ -1,4 +1,4 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.profile;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

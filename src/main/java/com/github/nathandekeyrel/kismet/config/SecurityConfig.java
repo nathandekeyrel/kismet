@@ -1,4 +1,4 @@
-package com.github.nathandekeyrel.kismet;
+package com.github.nathandekeyrel.kismet.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
