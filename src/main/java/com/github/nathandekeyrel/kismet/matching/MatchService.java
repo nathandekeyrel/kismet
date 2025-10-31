@@ -5,6 +5,7 @@ import com.github.nathandekeyrel.kismet.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -49,6 +50,16 @@ public class MatchService {
                 mutualMatchRepository.save(mutualMatch);
             }
         }
+    }
+
+    public List<User> getMatchedUsersFor(User currentUser) {
+        List<MutualMatch> matches = mutualMatchRepository.findByUser1OrUser2(currentUser, currentUser);
+
+        List<User> filteredMatches = matches.stream()
+                .map(match -> match.getUser1().equals(currentUser) ? match.getUser2() : match.getUser1())
+                .toList();
+
+        return filteredMatches;
     }
 
 }

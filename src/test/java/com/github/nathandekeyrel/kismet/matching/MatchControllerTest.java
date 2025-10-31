@@ -10,6 +10,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
@@ -128,4 +129,40 @@ public class MatchControllerTest {
         verify(matchService, times(1)).recordAction(currentUser, targetUser, ActionType.PASS);
     }
 
+    @Test
+    @WithMockUser(username = "user")
+    void showMatchesPage_whenUserHasMatches_thenDisplaysMatches() throws Exception {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        currentUser.setEmail("user");
+
+        User match1 = new User();
+        match1.setId(2L);
+        match1.setFirstName("Alice");
+
+        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(matchService.getMatchedUsersFor(currentUser)).thenReturn(List.of(match1));
+
+        mockMvc.perform(get("/matches"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("matches"))
+                .andExpect(model().attributeExists("matches"))
+                .andExpect(content().string(containsString("Alice")));
+    }
+
+    @Test
+    @WithMockUser
+    void showMatchesPage_whenUserHasNoMatches_thenDisplaysMessage() throws Exception {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        currentUser.setEmail("user");
+
+        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(matchService.getMatchedUsersFor(currentUser)).thenReturn(List.of());
+
+        mockMvc.perform(get("/matches"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("matches"))
+                .andExpect(content().string(containsString("You have no matches...")));
+    }
 }

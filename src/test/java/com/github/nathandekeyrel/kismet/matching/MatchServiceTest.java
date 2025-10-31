@@ -9,10 +9,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -114,5 +114,50 @@ public class MatchServiceTest {
         MutualMatch savedMutualMatch = mutualMatchCaptor.getValue();
         assertEquals(actor, savedMutualMatch.getUser1());
         assertEquals(target, savedMutualMatch.getUser2());
+    }
+
+    @Test
+    void getMatchedUsersFor_shouldReturnOtherUsersFromMatches() {
+        User currentUser = new User();
+        currentUser.setId(1L);
+
+        User match1 = new User();
+        match1.setId(2L);
+        match1.setFirstName("Alice");
+
+        User match2 = new User();
+        match2.setId(3L);
+        match2.setFirstName("Bob");
+
+        MutualMatch mutualMatch1 = new MutualMatch();
+        mutualMatch1.setUser1(currentUser);
+        mutualMatch1.setUser2(match1);
+
+        MutualMatch mutualMatch2 = new MutualMatch();
+        mutualMatch2.setUser1(match2);
+        mutualMatch2.setUser2(currentUser);
+
+        when(mutualMatchRepository.findByUser1OrUser2(currentUser, currentUser))
+                .thenReturn(List.of(mutualMatch1, mutualMatch2));
+
+        List<User> result = matchService.getMatchedUsersFor(currentUser);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains(match1));
+        assertTrue(result.contains(match2));
+        assertFalse(result.contains(currentUser));
+    }
+
+    @Test
+    void getMatchedUsersFor_whenNoMatches_shouldReturnEmptyList() {
+        User currentUser = new User();
+        currentUser.setId(1L);
+
+        when(mutualMatchRepository.findByUser1OrUser2(currentUser, currentUser))
+                .thenReturn(List.of());
+
+        List<User> result = matchService.getMatchedUsersFor(currentUser);
+
+        assertTrue(result.isEmpty());
     }
 }

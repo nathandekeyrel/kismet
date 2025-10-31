@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Your Matches</title>
+</head>
+<body>
+<h1>My Matches</h1>
+<p>
+    <a th:href="@{/home}">Back</a>
+    <a th:href="@{/profile}">My Profile</a>
+    <a th:href="@{/friends}">Friends</a>
+</p>
+
+<hr/>
+
+<div th:if="${not #lists.isEmpty(matches)}">
+    <p>Here are the people you have mutually matched with:</p>
+    <ul>
+        <li th:each="match : ${matches}">
+            <span th:text="${match.firstName} + ' ' + ${match.lastName}">Matched User Name</span>
+            <!--will add more functionality later-->
+        </li>
+    </ul>
+</div>
+
+<div th:if="${#lists.isEmpty(matches)}">
+    <p>You have no matches...</p>
+</div>
+
+<hr/>
+
+</body>
+</html>
