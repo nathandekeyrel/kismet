@@ -11,8 +11,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     List<User> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
 
-    @Query(value = "SELECT * FROM users WHERE user.id != :currentUserId AND user.id NOT IN " +
+    @Query(value = "SELECT * FROM users u WHERE u.id != :currentUserId AND u.id NOT IN " +
                    "(SELECT ma.target_id FROM match_actions ma WHERE ma.actor_id = :currentUserId) " +
-                   "ORDER BY RANDOM() LIMIT 1",  nativeQuery = true)
+                   "ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     Optional<User> findRandomUserNotInteractedWith(@Param("currentUserId") Long currentUserId);
 }

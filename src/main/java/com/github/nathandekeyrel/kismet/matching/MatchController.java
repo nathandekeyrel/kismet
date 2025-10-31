@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -30,6 +32,30 @@ public class MatchController {
         potentialMatch.ifPresent(user -> model.addAttribute("potentialMatch", user));
 
         return "home";
+    }
+
+    @PostMapping("/home/like")
+    public String likeUser(@RequestParam Long targetId, Principal principal) {
+        User currentUser = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User targetUser = userRepository.findById(targetId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        matchService.recordAction(currentUser, targetUser, ActionType.LIKE);
+
+        return "redirect:/home";
+    }
+
+    @PostMapping("/home/pass")
+    public String passUser(@RequestParam Long targetId, Principal principal) {
+        User currentUser = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User targetUser = userRepository.findById(targetId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        matchService.recordAction(currentUser, targetUser, ActionType.PASS);
+
+        return "redirect:/home";
     }
 
 }
