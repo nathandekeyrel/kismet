@@ -4,15 +4,40 @@
     <title>Kismet Home</title>
 </head>
 <body>
-<h1>Welcome to Kismet!</h1>
-<p>You have successfully logged in.</p>
+<h1>Find a Match</h1>
+<p>
+    <a th:href="@{/profile}">My Profile</a>
+    <a th:href="@{/matches}">Matches</a>
+    <a th:href="@{/friends}">Friends</a>
+</p>
 
-<p><a th:href="@{/profile}">View your profile</a></p>
+<hr/>
 
-<!--
-    Logout is a POST request by default for security (to prevent CSRF attacks).
-    Spring Security will automatically handle this form submission.
--->
+<div th:if="${potentialMatch}">
+    <div>
+        <h3 th:text="${potentialMatch.firstName}">User Name</h3>
+        <!--when the user profile is fleshed out, we wil add more info here-->
+    </div>
+
+    <div>
+        <form th:action="@{/home/like}" method="post">
+            <input type="hidden" name="targetId" th:value="${potentialMatch.id}"/>
+            <button type="submit">Like</button>
+        </form>
+
+        <form th:action="@{/home/pass}" method="post">
+            <input type="hidden" name="targetId" th:value="${potentialMatch.id}"/>
+            <button type="submit">Pass</button>
+        </form>
+    </div>
+</div>
+
+<div th:unless="${potentialMatch}">
+    <h2>No new people right now...</h2>
+</div>
+
+<hr/>
+
 <form th:action="@{/logout}" method="post">
     <button type="submit">Logout</button>
 </form>
