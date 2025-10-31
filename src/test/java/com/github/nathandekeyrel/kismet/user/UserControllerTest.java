@@ -1,8 +1,6 @@
 package com.github.nathandekeyrel.kismet.user;
 
 import org.junit.jupiter.api.Test;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +24,7 @@ public class UserControllerTest {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("home"))
-                .andExpect(content().string(containsString("Welcome to Kismet!")));
+                .andExpect(content().string(containsString("Kismet Home")));
     }
 
     @Test
