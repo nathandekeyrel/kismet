@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -56,6 +57,17 @@ public class MatchController {
         matchService.recordAction(currentUser, targetUser, ActionType.PASS);
 
         return "redirect:/home";
+    }
+
+    @GetMapping("/matches")
+    public String showMatchesPage(Model model, Principal principal) {
+        User currentUser = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        List<User> matchedUsers = matchService.getMatchedUsersFor(currentUser);
+        model.addAttribute("matches", matchedUsers);
+
+        return "matches";
     }
 
 }
