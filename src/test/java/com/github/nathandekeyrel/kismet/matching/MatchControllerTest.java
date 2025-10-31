@@ -13,8 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -60,7 +62,7 @@ public class MatchControllerTest {
 
     @Test
     @WithMockUser
-    void showMatchDeck_whenNoMatchFound_thenShowMMessage() throws Exception {
+    void showMatchDeck_whenNoMatchFound_thenShowMessage() throws Exception {
         User currentUser = new User();
         currentUser.setId(1L);
         currentUser.setEmail("user");
@@ -80,6 +82,50 @@ public class MatchControllerTest {
         mockMvc.perform(get("/matches"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("http://localhost/login"));
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void likeUser_whenAuthenticated_thenRecordsLikeAndRedirects() throws Exception {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        currentUser.setEmail("user");
+
+        User targetUser = new User();
+        targetUser.setId(2L);
+
+        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+
+        mockMvc.perform(post("/home/like")
+                        .param("targetId", "2")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/home"));
+
+        verify(matchService, times(1)).recordAction(currentUser, targetUser, ActionType.LIKE);
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void passUser_whenAuthenticated_thenRecordsPassAndRedirects() throws Exception {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        currentUser.setEmail("user");
+
+        User targetUser = new User();
+        targetUser.setId(2L);
+
+        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+
+        mockMvc.perform(post("/home/pass")
+                        .param("targetId", "2")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/home"));
+
+        verify(matchService, times(1)).recordAction(currentUser, targetUser, ActionType.PASS);
     }
 
 }
