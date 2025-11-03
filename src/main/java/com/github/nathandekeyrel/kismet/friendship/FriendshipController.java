@@ -64,8 +64,6 @@ public class FriendshipController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         List<User> searchResults = friendshipService.searchUsers(query, currentUser);
-
-        model.addAttribute("searchResults", searchResults);
         List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
         List<Friendship> acceptedFriends = friendshipService.getFriends(currentUser);
 
