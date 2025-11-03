@@ -11,17 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 public class FriendshipController {
 
     private final UserRepository userRepository;
-    private final FriendshipRepository friendshipRepository;
+    private final FriendshipService friendshipService;
 
-    public FriendshipController(UserRepository userRepository, FriendshipRepository friendshipRepository) {
+    public FriendshipController(UserRepository userRepository, FriendshipService friendshipService) {
         this.userRepository = userRepository;
-        this.friendshipRepository = friendshipRepository;
+        this.friendshipService = friendshipService;
     }
 
     @GetMapping("/friends")
@@ -29,8 +28,8 @@ public class FriendshipController {
         User currentUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        List<Friendship> pendingRequests = friendshipRepository.findByAddresseeAndStatus(currentUser, FriendshipStatus.PENDING);
-        List<Friendship> acceptedFriends = friendshipRepository.findAcceptedFriendships(currentUser);
+        List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
+        List<Friendship> acceptedFriends = friendshipService.getFriends(currentUser);
 
         model.addAttribute("pendingRequests", pendingRequests);
         model.addAttribute("acceptedFriends", acceptedFriends);
@@ -41,31 +40,20 @@ public class FriendshipController {
 
     @PostMapping("/friends/accept")
     public String acceptFriendRequest(@RequestParam("friendshipId") Long friendshipId, Principal principal) {
-        Friendship friendship = friendshipRepository.findById(friendshipId)
-                .orElseThrow(() -> new UsernameNotFoundException("Invalid friendship ID"));
-
         User currentUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (friendship.getAddressee().getId().equals(currentUser.getId())) {
-            friendship.setStatus(FriendshipStatus.ACCEPTED);
-            friendshipRepository.save(friendship);
-        }
+        friendshipService.acceptFriendRequest(friendshipId, currentUser);
 
         return "redirect:/friends";
     }
 
     @PostMapping("/friends/decline")
     public String declineFriendRequest(@RequestParam("friendshipId") Long friendshipId, Principal principal) {
-        Friendship friendship = friendshipRepository.findById(friendshipId)
-                .orElseThrow(() -> new UsernameNotFoundException("Invalid friendship ID"));
-
         User currentUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (friendship.getAddressee().getId().equals(currentUser.getId())) {
-            friendshipRepository.delete(friendship);
-        }
+        friendshipService.declineFriendRequest(friendshipId, currentUser);
 
         return "redirect:/friends";
     }
@@ -75,16 +63,13 @@ public class FriendshipController {
         User currentUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        List<User> results = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
+        List<User> searchResults = friendshipService.searchUsers(query, currentUser);
+        List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
+        List<Friendship> acceptedFriends = friendshipService.getFriends(currentUser);
 
-        List<User> filteredResults = results.stream()
-                .filter(user -> !user.getId().equals(currentUser.getId()))
-                .toList();
-
-        model.addAttribute("searchResults", filteredResults);
-
-        model.addAttribute("pendingRequests", friendshipRepository.findByAddresseeAndStatus(currentUser, FriendshipStatus.PENDING));
-        model.addAttribute("acceptedFriends", friendshipRepository.findAcceptedFriendships(currentUser));
+        model.addAttribute("searchResults", searchResults);
+        model.addAttribute("pendingRequests", pendingRequests);
+        model.addAttribute("acceptedFriends", acceptedFriends);
         model.addAttribute("currentUser", currentUser);
 
         return "friends";
@@ -98,28 +83,11 @@ public class FriendshipController {
         User targetUser = userRepository.findById(addresseeId)
                 .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
-        Optional<Friendship> existingFriendshipOpt = friendshipRepository.findFriendshipBetween(currentUser, targetUser);
+        String result = friendshipService.addFriend(currentUser, targetUser);
 
-        if (existingFriendshipOpt.isPresent()) {
-            Friendship existingFriendship = existingFriendshipOpt.get();
-
-            if (existingFriendship.getStatus().equals(FriendshipStatus.PENDING) &&
-                    existingFriendship.getAddressee().getId().equals(currentUser.getId())) {
-
-                existingFriendship.setStatus(FriendshipStatus.ACCEPTED);
-                friendshipRepository.save(existingFriendship);
-
-                return "redirect:/friends?success=accepted";
-            }
-            return "redirect:/friends?error=already_exists";
-        } else {
-            Friendship newRequest = new Friendship();
-            newRequest.setRequester(currentUser);
-            newRequest.setAddressee(targetUser);
-            newRequest.setStatus(FriendshipStatus.PENDING);
-            friendshipRepository.save(newRequest);
-
-            return "redirect:/friends?success=sent";
+        if (result.equals("already_exists")) {
+            return "redirect:/friends?error=" + result;
         }
+        return "redirect:/friends?success=" + result;
     }
 }
