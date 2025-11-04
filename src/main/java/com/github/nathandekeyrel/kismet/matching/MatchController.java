@@ -24,6 +24,11 @@ public class MatchController {
         this.matchService = matchService;
     }
 
+    @GetMapping("/")
+    public String redirectToHome() {
+        return "redirect:/home";
+    }
+
     @GetMapping("/home")
     public String showMatchDeck(Model model, Principal principal) {
         User currentUser = userRepository.findByEmail(principal.getName())
