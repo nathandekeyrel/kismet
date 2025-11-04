@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,8 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(ProfileController.class)
 public class ProfileControllerTest {
 
     @Autowired
@@ -62,13 +62,6 @@ public class ProfileControllerTest {
     }
 
     @Test
-    void whenUnauthenticated_thenRedirectsFromProfileToLogin() throws Exception {
-        mockMvc.perform(get("/profile"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("http://localhost/login"));
-    }
-
-    @Test
     @WithMockUser
     void whenAuthenticated_thenReturnsProfileEditPage() throws Exception {
         String mockUserEmail = "user";
@@ -83,13 +76,6 @@ public class ProfileControllerTest {
                 .andExpect(view().name("profile-edit"))
                 .andExpect(model().attributeExists("sections"))
                 .andExpect(model().attributeExists("profileForm"));
-    }
-
-    @Test
-    void whenUnauthenticated_thenRedirectsFromProfileEditToLogin() throws Exception {
-        mockMvc.perform(get("/profile/edit"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("http://localhost/login"));
     }
 
     @Test

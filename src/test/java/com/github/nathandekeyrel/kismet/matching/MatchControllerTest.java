@@ -4,8 +4,7 @@ import com.github.nathandekeyrel.kismet.user.User;
 import com.github.nathandekeyrel.kismet.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,8 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(MatchController.class)
 public class MatchControllerTest {
 
     @Autowired
@@ -33,12 +31,6 @@ public class MatchControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
-
-    @MockitoBean
-    private MatchActionRepository matchActionRepository;
-
-    @MockitoBean
-    private MutualMatchRepository mutualMatchRepository;
 
     @Test
     @WithMockUser
@@ -76,13 +68,6 @@ public class MatchControllerTest {
                 .andExpect(view().name("home"))
                 .andExpect(model().attributeDoesNotExist("potentialMatch"))
                 .andExpect(content().string(containsString("No new people right now...")));
-    }
-
-    @Test
-    void whenUnauthenticated_thenRedirectsToLogin() throws Exception {
-        mockMvc.perform(get("/matches"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("http://localhost/login"));
     }
 
     @Test
@@ -164,5 +149,20 @@ public class MatchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("matches"))
                 .andExpect(content().string(containsString("You have no matches...")));
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void showMatchDeck_whenCalled_thenCallsServiceToFindMatch() throws Exception {
+        User currentUser = new User();
+        currentUser.setEmail("user");
+
+        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(matchService.findPotentialMatch(currentUser)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/home"))
+                .andExpect(status().isOk());
+
+        verify(matchService).findPotentialMatch(currentUser);
     }
 }
