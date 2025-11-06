@@ -1,7 +1,7 @@
 package com.github.nathandekeyrel.kismet.matching;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -11,18 +11,18 @@ import java.util.Optional;
 @Service
 public class MatchService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final MatchActionRepository matchActionRepository;
     private final MutualMatchRepository mutualMatchRepository;
 
-    public MatchService(UserRepository userRepository, MatchActionRepository matchActionRepository, MutualMatchRepository mutualMatchRepository) {
-        this.userRepository = userRepository;
+    public MatchService(UserService userService, MatchActionRepository matchActionRepository, MutualMatchRepository mutualMatchRepository) {
+        this.userService = userService;
         this.matchActionRepository = matchActionRepository;
         this.mutualMatchRepository = mutualMatchRepository;
     }
 
     public Optional<User> findPotentialMatch(User currentUser) {
-        return userRepository.findRandomUserNotInteractedWith(currentUser.getId());
+        return userService.getRandomUser(currentUser);
     }
 
     @Transactional
@@ -61,5 +61,4 @@ public class MatchService {
 
         return filteredMatches;
     }
-
 }

@@ -1,7 +1,7 @@
 package com.github.nathandekeyrel.kismet.matching;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 public class MatchServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private MatchActionRepository matchActionRepository;
@@ -38,14 +38,14 @@ public class MatchServiceTest {
         User expectedMatch = new User();
         expectedMatch.setId(2L);
 
-        when(userRepository.findRandomUserNotInteractedWith(1L)).thenReturn(Optional.of(expectedMatch));
+        when(userService.getRandomUser(currentUser)).thenReturn(Optional.of(expectedMatch));
 
         Optional<User> actualMatch = matchService.findPotentialMatch(currentUser);
 
         assertTrue(actualMatch.isPresent());
         assertEquals(expectedMatch, actualMatch.get());
 
-        verify(userRepository, times(1)).findRandomUserNotInteractedWith(1L);
+        verify(userService, times(1)).getRandomUser(currentUser);
     }
 
     @Test

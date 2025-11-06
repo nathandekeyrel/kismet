@@ -3,6 +3,10 @@ package com.github.nathandekeyrel.kismet.user;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -16,6 +20,28 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return user;
+    }
+
+    public User getCurrentUser(Principal principal) {
+        return getUser(principal.getName());
+    }
+
+    public User getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return user;
+    }
+
+    public List<User> getByFirstOrLastName(String query) {
+        return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
+    }
+
+    public Optional<User> getRandomUser(User currentUser) {
+        return userRepository.findRandomUserNotInteractedWith(currentUser.getId());
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     public void save(User user) {

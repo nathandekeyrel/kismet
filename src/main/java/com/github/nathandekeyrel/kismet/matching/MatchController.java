@@ -1,8 +1,7 @@
 package com.github.nathandekeyrel.kismet.matching;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +15,11 @@ import java.util.Optional;
 @Controller
 public class MatchController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final MatchService matchService;
 
-    public MatchController(UserRepository userRepository, MatchService matchService) {
-        this.userRepository = userRepository;
+    public MatchController(UserService userService, MatchService matchService) {
+        this.userService = userService;
         this.matchService = matchService;
     }
 
@@ -31,8 +30,7 @@ public class MatchController {
 
     @GetMapping("/home")
     public String showMatchDeck(Model model, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
         Optional<User> potentialMatch = matchService.findPotentialMatch(currentUser);
         potentialMatch.ifPresent(user -> model.addAttribute("potentialMatch", user));
@@ -42,10 +40,9 @@ public class MatchController {
 
     @PostMapping("/home/like")
     public String likeUser(@RequestParam Long targetId, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        User targetUser = userRepository.findById(targetId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
+
+        User targetUser = userService.getUserById(targetId);
 
         matchService.recordAction(currentUser, targetUser, ActionType.LIKE);
 
@@ -54,10 +51,9 @@ public class MatchController {
 
     @PostMapping("/home/pass")
     public String passUser(@RequestParam Long targetId, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        User targetUser = userRepository.findById(targetId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
+
+        User targetUser = userService.getUserById(targetId);
 
         matchService.recordAction(currentUser, targetUser, ActionType.PASS);
 
@@ -66,8 +62,7 @@ public class MatchController {
 
     @GetMapping("/matches")
     public String showMatchesPage(Model model, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
         List<User> matchedUsers = matchService.getMatchedUsersFor(currentUser);
         model.addAttribute("matches", matchedUsers);

@@ -1,7 +1,7 @@
 package com.github.nathandekeyrel.kismet.friendship;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -9,11 +9,12 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -28,7 +29,7 @@ class FriendshipControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private UserRepository userRepository;
+    private UserService userService;
 
     @MockitoBean
     private FriendshipService friendshipService;
@@ -39,7 +40,7 @@ class FriendshipControllerTest {
         User mockUser = new User();
         mockUser.setEmail("user");
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(mockUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(mockUser);
         when(friendshipService.getFriendRequests(mockUser)).thenReturn(Collections.emptyList());
         when(friendshipService.getFriends(mockUser)).thenReturn(Collections.emptyList());
 
@@ -50,6 +51,8 @@ class FriendshipControllerTest {
                 .andExpect(model().attributeExists("acceptedFriends"))
                 .andExpect(model().attributeExists("currentUser"))
                 .andExpect(content().string(containsString("My Friends")));
+
+        verify(userService).getCurrentUser(any(Principal.class));
     }
 
     @Test
@@ -66,7 +69,7 @@ class FriendshipControllerTest {
         targetUser.setFirstName("Target");
         targetUser.setLastName("User");
 
-        when(userRepository.findByEmail("current")).thenReturn(Optional.of(currentUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(currentUser);
         when(friendshipService.searchUsers("target", currentUser))
                 .thenReturn(List.of(targetUser));
         when(friendshipService.getFriendRequests(currentUser)).thenReturn(Collections.emptyList());
@@ -81,6 +84,7 @@ class FriendshipControllerTest {
                 .andExpect(model().attributeExists("currentUser"))
                 .andExpect(content().string(containsString("Target User")));
 
+        verify(userService).getCurrentUser(any(Principal.class));
         verify(friendshipService).searchUsers("target", currentUser);
     }
 
@@ -95,8 +99,8 @@ class FriendshipControllerTest {
         targetUser.setId(2L);
         targetUser.setEmail("target");
 
-        when(userRepository.findByEmail("current")).thenReturn(Optional.of(currentUser));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(currentUser);
+        when(userService.getUserById(2L)).thenReturn(targetUser);
         when(friendshipService.addFriend(currentUser, targetUser)).thenReturn("sent");
 
         mockMvc.perform(post("/friends/add")
@@ -105,6 +109,8 @@ class FriendshipControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/friends?success=sent"));
 
+        verify(userService).getCurrentUser(any(Principal.class));
+        verify(userService).getUserById(2L);
         verify(friendshipService).addFriend(currentUser, targetUser);
     }
 
@@ -119,8 +125,8 @@ class FriendshipControllerTest {
         targetUser.setId(2L);
         targetUser.setEmail("target");
 
-        when(userRepository.findByEmail("current")).thenReturn(Optional.of(currentUser));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(currentUser);
+        when(userService.getUserById(2L)).thenReturn(targetUser);
         when(friendshipService.addFriend(currentUser, targetUser)).thenReturn("accepted");
 
         mockMvc.perform(post("/friends/add")
@@ -129,6 +135,8 @@ class FriendshipControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/friends?success=accepted"));
 
+        verify(userService).getCurrentUser(any(Principal.class));
+        verify(userService).getUserById(2L);
         verify(friendshipService).addFriend(currentUser, targetUser);
     }
 
@@ -143,8 +151,8 @@ class FriendshipControllerTest {
         targetUser.setId(2L);
         targetUser.setEmail("target");
 
-        when(userRepository.findByEmail("current")).thenReturn(Optional.of(currentUser));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(currentUser);
+        when(userService.getUserById(2L)).thenReturn(targetUser);
         when(friendshipService.addFriend(currentUser, targetUser)).thenReturn("already_exists");
 
         mockMvc.perform(post("/friends/add")
@@ -153,6 +161,8 @@ class FriendshipControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/friends?error=already_exists"));
 
+        verify(userService).getCurrentUser(any(Principal.class));
+        verify(userService).getUserById(2L);
         verify(friendshipService).addFriend(currentUser, targetUser);
     }
 
@@ -163,7 +173,7 @@ class FriendshipControllerTest {
         addresseeUser.setId(2L);
         addresseeUser.setEmail("addressee");
 
-        when(userRepository.findByEmail("addressee")).thenReturn(Optional.of(addresseeUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(addresseeUser);
 
         mockMvc.perform(post("/friends/accept")
                         .param("friendshipId", "99")
@@ -171,6 +181,7 @@ class FriendshipControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/friends"));
 
+        verify(userService).getCurrentUser(any(Principal.class));
         verify(friendshipService).acceptFriendRequest(99L, addresseeUser);
     }
 
@@ -181,7 +192,7 @@ class FriendshipControllerTest {
         addresseeUser.setId(2L);
         addresseeUser.setEmail("addressee");
 
-        when(userRepository.findByEmail("addressee")).thenReturn(Optional.of(addresseeUser));
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(addresseeUser);
 
         mockMvc.perform(post("/friends/decline")
                         .param("friendshipId", "99")
@@ -189,6 +200,7 @@ class FriendshipControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/friends"));
 
+        verify(userService).getCurrentUser(any(Principal.class));
         verify(friendshipService).declineFriendRequest(99L, addresseeUser);
     }
 }

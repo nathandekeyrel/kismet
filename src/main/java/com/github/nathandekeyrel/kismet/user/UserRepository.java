@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
                    "(SELECT ma.target_id FROM match_actions ma WHERE ma.actor_id = :currentUserId) " +
                    "ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     Optional<User> findRandomUserNotInteractedWith(@Param("currentUserId") Long currentUserId);
+
+    boolean existsByEmail(String email);
 }

@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -26,12 +26,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public String processRegistration(User user, Model model) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (userService.existsByEmail(user.getEmail())) {
             model.addAttribute("error", "An account with this email already exists.");
             return "register";
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:/login";
     }
 

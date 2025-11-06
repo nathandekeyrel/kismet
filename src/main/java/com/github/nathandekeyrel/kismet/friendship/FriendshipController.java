@@ -1,8 +1,7 @@
 package com.github.nathandekeyrel.kismet.friendship;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,18 +14,17 @@ import java.util.List;
 @Controller
 public class FriendshipController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FriendshipService friendshipService;
 
-    public FriendshipController(UserRepository userRepository, FriendshipService friendshipService) {
-        this.userRepository = userRepository;
+    public FriendshipController(UserService userService, FriendshipService friendshipService) {
+        this.userService = userService;
         this.friendshipService = friendshipService;
     }
 
     @GetMapping("/friends")
     public String showFriendsPage(Model model, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
         List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
         List<Friendship> acceptedFriends = friendshipService.getFriends(currentUser);
@@ -40,8 +38,7 @@ public class FriendshipController {
 
     @PostMapping("/friends/accept")
     public String acceptFriendRequest(@RequestParam("friendshipId") Long friendshipId, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
         friendshipService.acceptFriendRequest(friendshipId, currentUser);
 
@@ -50,8 +47,7 @@ public class FriendshipController {
 
     @PostMapping("/friends/decline")
     public String declineFriendRequest(@RequestParam("friendshipId") Long friendshipId, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
         friendshipService.declineFriendRequest(friendshipId, currentUser);
 
@@ -60,8 +56,7 @@ public class FriendshipController {
 
     @GetMapping("/friends/search")
     public String searchFriends(@RequestParam("query") String query, Model model, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
         List<User> searchResults = friendshipService.searchUsers(query, currentUser);
         List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
@@ -77,11 +72,9 @@ public class FriendshipController {
 
     @PostMapping("/friends/add")
     public String addFriend(@RequestParam("addresseeId") Long addresseeId, Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getCurrentUser(principal);
 
-        User targetUser = userRepository.findById(addresseeId)
-                .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
+        User targetUser = userService.getUserById(addresseeId);
 
         String result = friendshipService.addFriend(currentUser, targetUser);
 
