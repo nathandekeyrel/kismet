@@ -1,8 +1,7 @@
 package com.github.nathandekeyrel.kismet.profile;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,26 +15,20 @@ import java.util.Map;
 @Controller
 public class ProfileController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final ProfileService profileService;
 
-    private final PromptSectionRepository promptSectionRepository;
-    private final ProfileAnswerRepository profileAnswerRepository;
-    private final PromptRepository promptRepository;
-
-    public ProfileController(UserRepository userRepository, PromptSectionRepository promptSectionRepository, ProfileAnswerRepository profileAnswerRepository, PromptRepository promptRepository) {
-        this.userRepository = userRepository;
-        this.promptSectionRepository = promptSectionRepository;
-        this.profileAnswerRepository = profileAnswerRepository;
-        this.promptRepository = promptRepository;
+    public ProfileController(UserService userService, ProfileService profileService) {
+        this.userService = userService;
+        this.profileService = profileService;
     }
 
     @GetMapping("/profile")
     public String showProfile(Model model, Principal principal) {
         String email = principal.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userService.getUser(email);
 
-        List<ProfileAnswer> answers = profileAnswerRepository.findByUser(user);
+        List<ProfileAnswer> answers = profileService.getByUser(user);
 
         model.addAttribute("user", user);
         model.addAttribute("answers", answers);
@@ -46,13 +39,12 @@ public class ProfileController {
     @GetMapping("/profile/edit")
     public String showProfileEdit(Model model, Principal principal) {
         String email = principal.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userService.getUser(email);
 
-        List<PromptSection> sections = promptSectionRepository.findAll();
+        List<PromptSection> sections = profileService.getAll();
         model.addAttribute("sections", sections);
 
-        List<ProfileAnswer> existingAnswers = profileAnswerRepository.findByUser(user);
+        List<ProfileAnswer> existingAnswers = profileService.getByUser(user);
 
         ProfileEditForm form = new ProfileEditForm();
         form.setBio(user.getBio());
@@ -69,27 +61,24 @@ public class ProfileController {
     @PostMapping("/profile/edit")
     public String processProfileEdit(User user, @ModelAttribute("profileForm") ProfileEditForm profileForm, Principal principal) {
         String email = principal.getName();
-        User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User currentUser = userService.getUser(email);
 
         currentUser.setBio(user.getBio());
-        userRepository.save(currentUser);
+        userService.save(currentUser);
 
         for (Map.Entry<Long, String> entry : profileForm.getAnswers().entrySet()) {
             Long promptId = entry.getKey();
             String answerText = entry.getValue();
 
-            Prompt prompt = promptRepository.findById(promptId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid prompt ID"));
+            Prompt prompt = profileService.getPrompt(promptId);
 
-            ProfileAnswer answer = profileAnswerRepository.findByUserAndPrompt(currentUser, prompt)
-                    .orElse(new ProfileAnswer());
+            ProfileAnswer answer = profileService.getProfileAnswer(currentUser, prompt);
 
             answer.setUser(currentUser);
             answer.setPrompt(prompt);
             answer.setAnswerText(answerText);
 
-            profileAnswerRepository.save(answer);
+            profileService.save(answer);
         }
 
         return "redirect:/profile";
