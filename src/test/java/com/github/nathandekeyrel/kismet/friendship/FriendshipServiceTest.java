@@ -1,7 +1,7 @@
 package com.github.nathandekeyrel.kismet.friendship;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,7 @@ class FriendshipServiceTest {
     private FriendshipRepository friendshipRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @InjectMocks
     private FriendshipService friendshipService;
@@ -149,7 +149,7 @@ class FriendshipServiceTest {
         user2.setFirstName("Jane");
         user2.setLastName("Doe");
 
-        when(userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase("doe", "doe"))
+        when(userService.getByFirstOrLastName("doe"))
                 .thenReturn(List.of(requester, user1, user2));
 
         List<User> result = friendshipService.searchUsers("doe", requester);
@@ -158,6 +158,7 @@ class FriendshipServiceTest {
         assertFalse(result.contains(requester));
         assertTrue(result.contains(user1));
         assertTrue(result.contains(user2));
+        verify(userService).getByFirstOrLastName("doe");
     }
 
     @Test

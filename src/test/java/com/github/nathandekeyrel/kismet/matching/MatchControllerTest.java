@@ -1,7 +1,7 @@
 package com.github.nathandekeyrel.kismet.matching;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,7 +18,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(MatchController.class)
 public class MatchControllerTest {
@@ -30,7 +29,7 @@ public class MatchControllerTest {
     private MatchService matchService;
 
     @MockitoBean
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Test
     @WithMockUser
@@ -43,7 +42,7 @@ public class MatchControllerTest {
         targetUser.setId(2L);
         targetUser.setFirstName("target");
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
         when(matchService.findPotentialMatch(currentUser)).thenReturn(Optional.of(targetUser));
 
         mockMvc.perform(get("/home"))
@@ -51,6 +50,8 @@ public class MatchControllerTest {
                 .andExpect(view().name("home"))
                 .andExpect(model().attributeExists("potentialMatch"))
                 .andExpect(content().string(containsString("target")));
+
+        verify(userService).getUser("user");
     }
 
     @Test
@@ -60,7 +61,7 @@ public class MatchControllerTest {
         currentUser.setId(1L);
         currentUser.setEmail("user");
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
         when(matchService.findPotentialMatch(currentUser)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/home"))
@@ -68,6 +69,8 @@ public class MatchControllerTest {
                 .andExpect(view().name("home"))
                 .andExpect(model().attributeDoesNotExist("potentialMatch"))
                 .andExpect(content().string(containsString("No new people right now...")));
+
+        verify(userService).getUser("user");
     }
 
     @Test
@@ -80,8 +83,8 @@ public class MatchControllerTest {
         User targetUser = new User();
         targetUser.setId(2L);
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
+        when(userService.getUserById(2L)).thenReturn(targetUser);
 
         mockMvc.perform(post("/home/like")
                         .param("targetId", "2")
@@ -89,6 +92,8 @@ public class MatchControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/home"));
 
+        verify(userService).getUser("user");
+        verify(userService).getUserById(2L);
         verify(matchService, times(1)).recordAction(currentUser, targetUser, ActionType.LIKE);
     }
 
@@ -102,8 +107,8 @@ public class MatchControllerTest {
         User targetUser = new User();
         targetUser.setId(2L);
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
+        when(userService.getUserById(2L)).thenReturn(targetUser);
 
         mockMvc.perform(post("/home/pass")
                         .param("targetId", "2")
@@ -111,6 +116,8 @@ public class MatchControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/home"));
 
+        verify(userService).getUser("user");
+        verify(userService).getUserById(2L);
         verify(matchService, times(1)).recordAction(currentUser, targetUser, ActionType.PASS);
     }
 
@@ -125,7 +132,7 @@ public class MatchControllerTest {
         match1.setId(2L);
         match1.setFirstName("Alice");
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
         when(matchService.getMatchedUsersFor(currentUser)).thenReturn(List.of(match1));
 
         mockMvc.perform(get("/matches"))
@@ -133,6 +140,8 @@ public class MatchControllerTest {
                 .andExpect(view().name("matches"))
                 .andExpect(model().attributeExists("matches"))
                 .andExpect(content().string(containsString("Alice")));
+
+        verify(userService).getUser("user");
     }
 
     @Test
@@ -142,13 +151,15 @@ public class MatchControllerTest {
         currentUser.setId(1L);
         currentUser.setEmail("user");
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
         when(matchService.getMatchedUsersFor(currentUser)).thenReturn(List.of());
 
         mockMvc.perform(get("/matches"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("matches"))
                 .andExpect(content().string(containsString("You have no matches...")));
+
+        verify(userService).getUser("user");
     }
 
     @Test
@@ -157,12 +168,13 @@ public class MatchControllerTest {
         User currentUser = new User();
         currentUser.setEmail("user");
 
-        when(userRepository.findByEmail("user")).thenReturn(Optional.of(currentUser));
+        when(userService.getUser("user")).thenReturn(currentUser);
         when(matchService.findPotentialMatch(currentUser)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/home"))
                 .andExpect(status().isOk());
 
+        verify(userService).getUser("user");
         verify(matchService).findPotentialMatch(currentUser);
     }
 }

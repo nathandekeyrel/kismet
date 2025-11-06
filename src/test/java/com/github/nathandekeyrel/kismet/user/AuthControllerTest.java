@@ -12,8 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,7 +27,7 @@ public class AuthControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private UserRepository userRepository;
+    private UserService userService;
 
     @MockitoBean
     private PasswordEncoder passwordEncoder;
@@ -42,19 +40,23 @@ public class AuthControllerTest {
 
     @Test
     void whenRegisteringNewUser_thenSavesUserAndRedirectsToLogin() throws Exception {
+        when(userService.existsByEmail("newuser@example.com")).thenReturn(false);
+
         mockMvc.perform(post("/register")
                         .param("email", "newuser@example.com")
                         .param("password", "12345")
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login"));
-        verify(userRepository).save(any(User.class));
+
+        verify(userService).existsByEmail("newuser@example.com");
+        verify(userService).save(any(User.class));
     }
 
     @Test
     void whenRegisteringDuplicateUser_thenReturnsRegisterPageWithError() throws Exception {
         String duplicateEmail = "test@example.com";
-        when(userRepository.findByEmail(duplicateEmail)).thenReturn(Optional.of(new User()));
+        when(userService.existsByEmail(duplicateEmail)).thenReturn(true);
 
         mockMvc.perform(post("/register")
                         .param("email", duplicateEmail)
@@ -63,5 +65,7 @@ public class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("register"))
                 .andExpect(model().attributeExists("error"));
+
+        verify(userService).existsByEmail(duplicateEmail);
     }
 }
