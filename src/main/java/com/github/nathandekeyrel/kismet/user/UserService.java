@@ -35,6 +35,10 @@ public class UserService {
         return userRepository.findRandomUserNotInteractedWith(currentUser.getId());
     }
 
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     public void save(User user) {
         userRepository.save(user);
     }
