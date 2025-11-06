@@ -2,6 +2,7 @@ package com.github.nathandekeyrel.kismet.friendship;
 
 import com.github.nathandekeyrel.kismet.user.User;
 import com.github.nathandekeyrel.kismet.user.UserRepository;
+import com.github.nathandekeyrel.kismet.user.UserService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -11,11 +12,11 @@ import java.util.Optional;
 @Service
 public class FriendshipService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FriendshipRepository friendshipRepository;
 
-    public FriendshipService(UserRepository userRepository, FriendshipRepository friendshipRepository) {
-        this.userRepository = userRepository;
+    public FriendshipService(UserService userService, FriendshipRepository friendshipRepository) {
+        this.userService = userService;
         this.friendshipRepository = friendshipRepository;
     }
 
@@ -47,7 +48,7 @@ public class FriendshipService {
     }
 
     public List<User> searchUsers(String query, User currentUser) {
-        List<User> results = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
+        List<User> results = userService.getByFirstOrLastName(query);
 
         return results.stream()
                 .filter(user -> !user.getId().equals(currentUser.getId()))
