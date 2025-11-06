@@ -30,8 +30,7 @@ public class MatchController {
 
     @GetMapping("/home")
     public String showMatchDeck(Model model, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         Optional<User> potentialMatch = matchService.findPotentialMatch(currentUser);
         potentialMatch.ifPresent(user -> model.addAttribute("potentialMatch", user));
@@ -41,8 +40,7 @@ public class MatchController {
 
     @PostMapping("/home/like")
     public String likeUser(@RequestParam Long targetId, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         User targetUser = userService.getUserById(targetId);
 
@@ -53,8 +51,7 @@ public class MatchController {
 
     @PostMapping("/home/pass")
     public String passUser(@RequestParam Long targetId, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         User targetUser = userService.getUserById(targetId);
 
@@ -65,8 +62,7 @@ public class MatchController {
 
     @GetMapping("/matches")
     public String showMatchesPage(Model model, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         List<User> matchedUsers = matchService.getMatchedUsersFor(currentUser);
         model.addAttribute("matches", matchedUsers);
