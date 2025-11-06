@@ -25,12 +25,11 @@ public class ProfileController {
 
     @GetMapping("/profile")
     public String showProfile(Model model, Principal principal) {
-        String email = principal.getName();
-        User user = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
-        List<ProfileAnswer> answers = profileService.getByUser(user);
+        List<ProfileAnswer> answers = profileService.getByUser(currentUser);
 
-        model.addAttribute("user", user);
+        model.addAttribute("user", currentUser);
         model.addAttribute("answers", answers);
 
         return "profile";
@@ -38,16 +37,15 @@ public class ProfileController {
 
     @GetMapping("/profile/edit")
     public String showProfileEdit(Model model, Principal principal) {
-        String email = principal.getName();
-        User user = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         List<PromptSection> sections = profileService.getAll();
         model.addAttribute("sections", sections);
 
-        List<ProfileAnswer> existingAnswers = profileService.getByUser(user);
+        List<ProfileAnswer> existingAnswers = profileService.getByUser(currentUser);
 
         ProfileEditForm form = new ProfileEditForm();
-        form.setBio(user.getBio());
+        form.setBio(currentUser.getBio());
 
         for (ProfileAnswer answer : existingAnswers) {
             form.getAnswers().put(answer.getPrompt().getId(), answer.getAnswerText());
@@ -60,8 +58,7 @@ public class ProfileController {
 
     @PostMapping("/profile/edit")
     public String processProfileEdit(User user, @ModelAttribute("profileForm") ProfileEditForm profileForm, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         currentUser.setBio(user.getBio());
         userService.save(currentUser);

@@ -10,6 +10,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,14 +35,14 @@ public class ProfileControllerTest {
     private ProfileService profileService;
 
     @Test
-    @WithMockUser(username = "user@test.com")
+    @WithMockUser(username = "user")
     void whenAuthenticated_thenReturnsProfilePage() throws Exception {
         User mockUser = new User();
-        mockUser.setEmail("user@test.com");
+        mockUser.setEmail("user");
         mockUser.setFirstName("John");
         mockUser.setLastName("Doe");
 
-        when(userService.getUser("user@test.com")).thenReturn(mockUser);
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(mockUser);
         when(profileService.getByUser(mockUser)).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/profile"))
@@ -50,15 +51,15 @@ public class ProfileControllerTest {
                 .andExpect(model().attributeExists("user"))
                 .andExpect(model().attributeExists("answers"));
 
-        verify(userService).getUser("user@test.com");
+        verify(userService).getCurrentUser(any(Principal.class));
         verify(profileService).getByUser(mockUser);
     }
 
     @Test
-    @WithMockUser(username = "user@test.com")
+    @WithMockUser(username = "user")
     void whenAuthenticated_thenReturnsProfileEditPage() throws Exception {
         User mockUser = new User();
-        mockUser.setEmail("user@test.com");
+        mockUser.setEmail("user");
         mockUser.setBio("Existing bio");
 
         PromptSection section = new PromptSection();
@@ -73,7 +74,7 @@ public class ProfileControllerTest {
         existingAnswer.setPrompt(prompt);
         existingAnswer.setAnswerText("Coding");
 
-        when(userService.getUser("user@test.com")).thenReturn(mockUser);
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(mockUser);
         when(profileService.getAll()).thenReturn(List.of(section));
         when(profileService.getByUser(mockUser)).thenReturn(List.of(existingAnswer));
 
@@ -83,19 +84,19 @@ public class ProfileControllerTest {
                 .andExpect(model().attributeExists("sections"))
                 .andExpect(model().attributeExists("profileForm"));
 
-        verify(userService).getUser("user@test.com");
+        verify(userService).getCurrentUser(any(Principal.class));
         verify(profileService).getAll();
         verify(profileService).getByUser(mockUser);
     }
 
     @Test
-    @WithMockUser(username = "user@test.com")
+    @WithMockUser(username = "user")
     void whenEditingProfile_thenUpdatesUserAndRedirects() throws Exception {
         String newBio = "This is my new, updated bio.";
         String promptAnswer = "Yes";
 
         User originalUser = new User();
-        originalUser.setEmail("user@test.com");
+        originalUser.setEmail("user");
 
         Prompt originalPrompt = new Prompt();
         originalPrompt.setId(101L);
@@ -103,7 +104,7 @@ public class ProfileControllerTest {
 
         ProfileAnswer answer = new ProfileAnswer();
 
-        when(userService.getUser("user@test.com")).thenReturn(originalUser);
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(originalUser);
         when(profileService.getPrompt(101L)).thenReturn(originalPrompt);
         when(profileService.getProfileAnswer(originalUser, originalPrompt)).thenReturn(answer);
 
@@ -129,10 +130,10 @@ public class ProfileControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user@test.com")
+    @WithMockUser(username = "user")
     void whenViewingProfile_thenDisplaysAnswers() throws Exception {
         User user = new User();
-        user.setEmail("user@test.com");
+        user.setEmail("user");
         user.setFirstName("Jane");
 
         Prompt prompt = new Prompt();
@@ -142,7 +143,7 @@ public class ProfileControllerTest {
         answer.setPrompt(prompt);
         answer.setAnswerText("Rock climbing");
 
-        when(userService.getUser("user@test.com")).thenReturn(user);
+        when(userService.getCurrentUser(any(Principal.class))).thenReturn(user);
         when(profileService.getByUser(user)).thenReturn(List.of(answer));
 
         mockMvc.perform(get("/profile"))
