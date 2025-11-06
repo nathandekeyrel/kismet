@@ -24,8 +24,7 @@ public class FriendshipController {
 
     @GetMapping("/friends")
     public String showFriendsPage(Model model, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
         List<Friendship> acceptedFriends = friendshipService.getFriends(currentUser);
@@ -39,8 +38,7 @@ public class FriendshipController {
 
     @PostMapping("/friends/accept")
     public String acceptFriendRequest(@RequestParam("friendshipId") Long friendshipId, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         friendshipService.acceptFriendRequest(friendshipId, currentUser);
 
@@ -49,8 +47,7 @@ public class FriendshipController {
 
     @PostMapping("/friends/decline")
     public String declineFriendRequest(@RequestParam("friendshipId") Long friendshipId, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         friendshipService.declineFriendRequest(friendshipId, currentUser);
 
@@ -59,8 +56,7 @@ public class FriendshipController {
 
     @GetMapping("/friends/search")
     public String searchFriends(@RequestParam("query") String query, Model model, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         List<User> searchResults = friendshipService.searchUsers(query, currentUser);
         List<Friendship> pendingRequests = friendshipService.getFriendRequests(currentUser);
@@ -76,8 +72,7 @@ public class FriendshipController {
 
     @PostMapping("/friends/add")
     public String addFriend(@RequestParam("addresseeId") Long addresseeId, Principal principal) {
-        String email = principal.getName();
-        User currentUser = userService.getUser(email);
+        User currentUser = userService.getCurrentUser(principal);
 
         User targetUser = userService.getUserById(addresseeId);
 
