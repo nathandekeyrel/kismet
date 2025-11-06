@@ -1,7 +1,6 @@
 package com.github.nathandekeyrel.kismet.friendship;
 
 import com.github.nathandekeyrel.kismet.user.User;
-import com.github.nathandekeyrel.kismet.user.UserRepository;
 import com.github.nathandekeyrel.kismet.user.UserService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
