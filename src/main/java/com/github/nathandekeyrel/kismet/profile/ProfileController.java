@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 public class ProfileController {
@@ -26,10 +25,11 @@ public class ProfileController {
     @GetMapping("/profile")
     public String showProfile(Model model, Principal principal) {
         User currentUser = userService.getCurrentUser(principal);
-
-        List<ProfileAnswer> answers = profileService.getByUser(currentUser);
+        Profile profile = profileService.getByUser(currentUser);
+        List<ProfileAnswer> answers = profileService.getAnswersByProfile(profile);
 
         model.addAttribute("user", currentUser);
+        model.addAttribute("profile", profile);
         model.addAttribute("answers", answers);
 
         return "profile";
@@ -38,45 +38,20 @@ public class ProfileController {
     @GetMapping("/profile/edit")
     public String showProfileEdit(Model model, Principal principal) {
         User currentUser = userService.getCurrentUser(principal);
+        Profile profile = profileService.getByUser(currentUser);
 
-        List<PromptSection> sections = profileService.getAll();
-        model.addAttribute("sections", sections);
-
-        List<ProfileAnswer> existingAnswers = profileService.getByUser(currentUser);
-
-        ProfileEditForm form = new ProfileEditForm();
-        form.setBio(currentUser.getBio());
-
-        for (ProfileAnswer answer : existingAnswers) {
-            form.getAnswers().put(answer.getPrompt().getId(), answer.getAnswerText());
-        }
-
-        model.addAttribute("profileForm", form);
+        model.addAttribute("promptTypes", PromptType.values());
+        model.addAttribute("profileForm", profileService.buildEditForm(profile));
 
         return "profile-edit";
     }
 
     @PostMapping("/profile/edit")
-    public String processProfileEdit(User user, @ModelAttribute("profileForm") ProfileEditForm profileForm, Principal principal) {
+    public String processProfileEdit(@ModelAttribute("profileForm") ProfileEditForm profileForm, Principal principal) {
         User currentUser = userService.getCurrentUser(principal);
+        Profile profile = profileService.getByUser(currentUser);
 
-        currentUser.setBio(user.getBio());
-        userService.save(currentUser);
-
-        for (Map.Entry<Long, String> entry : profileForm.getAnswers().entrySet()) {
-            Long promptId = entry.getKey();
-            String answerText = entry.getValue();
-
-            Prompt prompt = profileService.getPrompt(promptId);
-
-            ProfileAnswer answer = profileService.getProfileAnswer(currentUser, prompt);
-
-            answer.setUser(currentUser);
-            answer.setPrompt(prompt);
-            answer.setAnswerText(answerText);
-
-            profileService.save(answer);
-        }
+        profileService.updateProfile(profile, profileForm.getBio(), profileForm.getAnswers());
 
         return "redirect:/profile";
     }

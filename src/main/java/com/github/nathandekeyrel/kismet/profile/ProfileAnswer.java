@@ -1,24 +1,20 @@
 package com.github.nathandekeyrel.kismet.profile;
 
-import com.github.nathandekeyrel.kismet.user.User;
+import com.github.nathandekeyrel.kismet.common.Model;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "profile_answers")
-public class ProfileAnswer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+@Table(name = "profile_answers", uniqueConstraints = @UniqueConstraint(columnNames = {"profile_id", "prompt_type"}))
+public class ProfileAnswer extends Model {
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "profile_id", nullable = false)
+    private Profile profile;
 
-    @ManyToOne
-    @JoinColumn(name = "prompt_id", nullable = false)
-    private Prompt prompt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PromptType promptType;
 
     @Column(nullable = false, length = 500)
     private String answerText;

@@ -1,6 +1,7 @@
 package com.github.nathandekeyrel.kismet.user;
 
-import com.github.nathandekeyrel.kismet.profile.*;
+import com.github.nathandekeyrel.kismet.profile.Profile;
+import com.github.nathandekeyrel.kismet.profile.ProfileService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,10 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class AuthController {
 
     private final UserService userService;
+    private final ProfileService profileService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, ProfileService profileService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.profileService = profileService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -32,6 +35,11 @@ public class AuthController {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.save(user);
+
+        Profile profile = new Profile();
+        profile.setUser(user);
+        profileService.saveProfile(profile);
+
         return "redirect:/login";
     }
 
