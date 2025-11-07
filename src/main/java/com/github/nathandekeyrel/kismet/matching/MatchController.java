@@ -1,5 +1,6 @@
 package com.github.nathandekeyrel.kismet.matching;
 
+import com.github.nathandekeyrel.kismet.profile.ProfileService;
 import com.github.nathandekeyrel.kismet.user.User;
 import com.github.nathandekeyrel.kismet.user.UserService;
 import org.springframework.stereotype.Controller;
@@ -17,10 +18,12 @@ public class MatchController {
 
     private final UserService userService;
     private final MatchService matchService;
+    private final ProfileService profileService;
 
-    public MatchController(UserService userService, MatchService matchService) {
+    public MatchController(UserService userService, MatchService matchService, ProfileService profileService) {
         this.userService = userService;
         this.matchService = matchService;
+        this.profileService = profileService;
     }
 
     @GetMapping("/")
@@ -33,7 +36,11 @@ public class MatchController {
         User currentUser = userService.getCurrentUser(principal);
 
         Optional<User> potentialMatch = matchService.findPotentialMatch(currentUser);
-        potentialMatch.ifPresent(user -> model.addAttribute("potentialMatch", user));
+        if (potentialMatch.isPresent()) {
+            User match = potentialMatch.get();
+            match.setProfile(profileService.getByUser(match));
+            model.addAttribute("potentialMatch", match);
+        }
 
         return "home";
     }
