@@ -23,12 +23,18 @@
         <strong>Gender:</strong>
         <span th:text="*{gender}"></span>
     </p>
+
+    <div th:if="${profile.bio != null and !profile.bio.isEmpty()}">
+        <h3>Bio</h3>
+        <p th:text="${profile.bio}"></p>
+    </div>
+
     <div>
         <h3>My Profile Prompts</h3>
 
         <div th:each="answer : ${answers}" style="margin-bottom: 20px;">
             <p>
-                <strong th:text="${answer.prompt.text}"></strong>
+                <strong th:text="${answer.promptType.displayText}"></strong>
             </p>
             <p th:text="${answer.answerText}" style="padding-left: 20px; font-style: italic;"></p>
         </div>
