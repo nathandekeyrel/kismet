@@ -3,7 +3,9 @@ package com.github.nathandekeyrel.kismet.profile;
 import com.github.nathandekeyrel.kismet.common.Model;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "profile_answers", uniqueConstraints = @UniqueConstraint(columnNames = {"profile_id", "prompt_type"}))

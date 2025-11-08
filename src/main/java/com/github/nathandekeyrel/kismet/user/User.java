@@ -5,11 +5,13 @@ import com.github.nathandekeyrel.kismet.friendship.Friendship;
 import com.github.nathandekeyrel.kismet.profile.Profile;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "users")

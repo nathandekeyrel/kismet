@@ -4,10 +4,12 @@ import com.github.nathandekeyrel.kismet.common.Model;
 import com.github.nathandekeyrel.kismet.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "profiles")
