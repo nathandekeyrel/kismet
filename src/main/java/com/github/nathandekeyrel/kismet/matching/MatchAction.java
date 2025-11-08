@@ -1,18 +1,17 @@
 package com.github.nathandekeyrel.kismet.matching;
 
+import com.github.nathandekeyrel.kismet.common.Model;
 import com.github.nathandekeyrel.kismet.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "match_actions")
-public class MatchAction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class MatchAction extends Model {
     @ManyToOne
     @JoinColumn(name = "actor_id",  nullable = false)
     @ToString.Exclude
