@@ -1,5 +1,6 @@
 package com.github.nathandekeyrel.kismet.friendship;
 
+import com.github.nathandekeyrel.kismet.common.Model;
 import com.github.nathandekeyrel.kismet.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -7,11 +8,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "friendships")
-public class Friendship {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Friendship extends Model {
     @ManyToOne
     @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
