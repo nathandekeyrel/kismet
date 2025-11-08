@@ -1,7 +1,8 @@
 package com.github.nathandekeyrel.kismet.user;
 
-
+import com.github.nathandekeyrel.kismet.common.Model;
 import com.github.nathandekeyrel.kismet.friendship.Friendship;
+import com.github.nathandekeyrel.kismet.profile.Profile;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,11 +13,7 @@ import java.util.Set;
 @Data
 @Entity
 @Table(name = "users")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class User extends Model {
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -36,8 +33,8 @@ public class User {
     @Column(nullable = false)
     private Gender gender;
 
-    @Column
-    private String bio;
+    @OneToOne(mappedBy = "user")
+    private Profile profile;
 
     @OneToMany(mappedBy = "requester")
     private Set<Friendship> sentFriendRequests = new HashSet<>();

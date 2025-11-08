@@ -14,14 +14,13 @@
     </div>
     <hr>
 
-    <div th:each="section, secStat : ${sections}">
-        <h2 th:text="${section.title}"></h2>
+    <h2>Profile Prompts</h2>
+    <p>Choose prompts to answer and share on your profile:</p>
 
-        <div th:each="prompt : ${section.prompts}" style="margin-bottom: 1em;">
-            <label th:for="|answers[${prompt.id}]|" th:text="${prompt.text}"></label>
-            <br>
-            <textarea th:field="*{answers[__${prompt.id}__]}" rows="4" cols="50"></textarea>
-        </div>
+    <div th:each="promptType : ${promptTypes}" style="margin-bottom: 1em;">
+        <label th:for="|answers[${promptType}]|" th:text="${promptType.displayText}"></label>
+        <br>
+        <textarea th:field="*{answers[__${promptType}__]}" rows="4" cols="50"></textarea>
     </div>
 
     <div>
